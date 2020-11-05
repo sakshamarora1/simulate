@@ -1,0 +1,33 @@
+name: Test, build and deploy
+on:
+  workflow_dispatch:
+
+jobs:
+  build_deploy:
+    runs-on: ubuntu-latest
+    name: Build apk and web
+    steps:
+      - uses: actions/checkout@v1
+      - uses: subosito/flutter-action@v1
+        with:
+          flutter-version: '1.22.3'
+          channel: 'stable'
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '12.x'
+      - run: flutter config --enable-web
+      - run: flutter pub get
+      - run: flutter build apk --release
+      - name: Create a Release APK
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/app/outputs/apk/app-release.apk"
+          tag: "latest"
+          token: ${{ secrets.GITHUB_TOKEN }}
+      # - run: flutter build web
+      # - uses: JamesIves/github-pages-deploy-action@releases/v3
+      #   with:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_ACCESS_TOKEN }}
+      #     BASE_BRANCH: master
+      #     BRANCH: gh-pages
+      #     FOLDER: build/web
